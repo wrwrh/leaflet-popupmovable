@@ -1,6 +1,8 @@
 # leaflet-popupmovable
 Make Leaflet's L.Popup movable and draw leadline.
 
+[demo](http://)
+
 ### Usage
 1. include the plugin file.
 ```
@@ -12,3 +14,5 @@ Make Leaflet's L.Popup movable and draw leadline.
   new PopupMovable(your-L.Map);
 </script>
 ```
+### License
+This code is provided under the MIT license.
