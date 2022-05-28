@@ -2,6 +2,7 @@
 Make Leaflet's L.Popup movable and draw leadline.
 
 [demo](http://)
+![demo image](./Demo/demo.PNG)
 
 ### Usage
 1. include the plugin file.
