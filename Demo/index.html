@@ -6,13 +6,60 @@
   <title>Demo site for PopupMovable Plug-in</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ==" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>
+  <script src="../Leaflet.PopupMovable.js"></script>
+  <style>
+		html, body {
+			height: 100%;
+			margin: 0;
+		}
+		.leaflet-container {
+			height: 400px;
+			width: 600px;
+			max-width: 100%;
+			max-height: 100%;
+		}
+	</style>
+
   <script>
-    //initialize L.Map
-    const Lmap = L.map('MapContainer').setView([35.36, 138.7], 6);
-    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'}).addTo(Lmap);
-</script>
+    function init(){
+      //initialize L.Map
+      const Lmap = new L.map('MapContainer', {
+        zoomControl: true,
+        closePopupOnClick: false,
+        preferCanvas: true,
+        fullscreenControl: true,
+      }).setView([35.2, 136.9], 5);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(Lmap);
+      //PopupMovable plugin are enabled.
+      new PopupMovable(Lmap);
+
+
+      //create Popup's for demo.
+      const popup = new L.Popup({autoClose:false}).setContent(
+        "It's Movable.<br>" +
+        "This plugin optimized for L.circleMarker");
+      L.circleMarker([37.75,140.47]).addTo(Lmap).bindPopup(popup).openPopup();
+
+      //standalone popup(not bind for any markers.)
+      L.popup({autoClose:false})
+        .setLatLng([35.36, 137.09])
+        .setContent('Standalone popup are movable too.')
+        .openOn(Lmap);
+      
+      const popup2 = new L.Popup({autoClose:false}).setContent(
+      "Not suitable for L.popup binding L.marker<br>" + 
+      "because This plugin dose not consider Popup's offset");
+      L.marker([26.2,127.68]).addTo(Lmap).bindPopup(popup2).openPopup();
+
+      }
+      
+      
+
+  </script>
 </head>
-<body>
-  <div id="MapContainer"></div>
+<body onload="init()">
+  <div id="MapContainer" style="width: 100%; height: 100%;"></div>
 </body>
 </html>

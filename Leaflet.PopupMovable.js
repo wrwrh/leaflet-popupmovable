@@ -23,7 +23,8 @@ class PopupMovable{
         map.on('zoomstart', (e)=> {
             const popupPositions = {};
             document.querySelectorAll('.leaflet-popup').forEach((p) => {
-                popupPositions[p._leaflet_id] = p._leaflet_pos;
+                const pos = L.DomUtil.getPosition(p);
+                popupPositions[p._leaflet_id] = pos;
             });
             //While ZoomLebel changing, restore Popup's css temporary.
             this.restorePopup(e);
@@ -86,8 +87,11 @@ class PopupMovable{
         };
         //Width when Marker and Popup are parallel.
         const para = 18;
+        //Tweak leadline point(these parameters for L.circleMarker.Not preferred for L.marker).
         const offset = 20;
-
+        const tweakH = 4;
+        const tweakW = 3;
+        const iconOffset = 0;
         //Depending on The width of the balloon and distance, change the width of the base of the leader.
         const ww = (width)=>{
             //Usually the bottom width is 20%.
@@ -102,60 +106,61 @@ class PopupMovable{
             //parallel
             c['z-index'] = zin;
             c['height'] = para;
-            c['top'] = h/2 - para/2 + y;
+            c['top'] = h/2 - para/2 + y - tweakH;
             if(x >= 0){
                 //left
-                c['width'] = Math.abs(x) - w/2 - offset;
+                c['width'] = Math.abs(x) - w/2 - offset + tweakW; 
                 c['left'] = w + offset;
                 c['background-image'] = svgicon("0,0 100,50 0,100");
             }else{
                 //right
-                c['width'] = Math.abs(x) - w/2 + offset;
-                c['left'] = -(Math.abs(x) - w/2);
+                c['width'] = Math.abs(x) - w/2 + offset - tweakW;
+                c['left'] = -(Math.abs(x) - w/2) + tweakW;
                 c['background-image'] = svgicon("0,50 100,0 100,100");
             }
         }else if(Math.abs(x-offset)+offset <= w/2){
             //vertical
             c['z-index'] = zin;
             c['width'] = para;
-            c['left'] = w/2 + x - para/2;
-            c['height'] = Math.abs(y) - h/2;
+            c['left'] = w/2 + x - para/2 + tweakW;
             if(y >= 0){
                 //top
-                c['top'] = h;
+                c['height'] = Math.abs(y) - h/2;
+                c['top'] = h - tweakH;
                 c['background-image'] = svgicon("0,0 50,100 100,0");
             }else{
                 //bottom
-                c['top'] = h/2 - Math.abs(y) + 1 //adding overlapping part.
+                c['height'] = Math.abs(y) + tweakH;
+                c['top'] = h/2 - Math.abs(y)-tweakH; //adding overlapping part.
                 c['background-image'] = svgicon("0,100 50,0 100,100");
             }
         }else if(x >= 0 && y >= 0){
             //left-upper
             c['width'] = Math.abs(x);
-            c['left'] = w/2;
+            c['left'] = w/2 + tweakW;
             c['height'] = Math.abs(y);
-            c['top'] = h/2;
+            c['top'] = h/2 - tweakH;
             c['background-image'] = svgicon("0,0 100,100 "+String(ww(c['width']))+",0");
         }else if(x <= 0 && y >= 0){
             //right-upper
             c['width'] = Math.abs(x)+offset*2;
-            c['left'] = w/2 - Math.abs(x);
+            c['left'] = w/2 - Math.abs(x) + tweakW;
             c['height'] = Math.abs(y);
-            c['top'] = h/2;
+            c['top'] = h/2 -tweakH;
             c['background-image'] = svgicon("0 100,100 0,"+String(100-ww(c['width']))+" 0");
         }else if(x <= 0 && y <= 0){
             //right-lower
             c['width'] = Math.abs(x)+offset*2;
-            c['left'] = w/2 - Math.abs(x);
+            c['left'] = w/2 - Math.abs(x) +tweakW;
             c['height'] = Math.abs(y);
-            c['top'] = h/2 - Math.abs(y);
+            c['top'] = h/2 - Math.abs(y) -tweakH;
             c['background-image'] = svgicon("0,0 "+String(100-ww(c['width']))+",100 100,100");
         }else if(x >= 0 && y <= 0){
             //left-lower
             c['width'] = Math.abs(x);
-            c['left'] = w/2;
+            c['left'] = w/2 + tweakW;
             c['height'] = Math.abs(y);
-            c['top'] = h/2 - Math.abs(y);
+            c['top'] = h/2 - Math.abs(y) -tweakH;
             c['background-image'] = svgicon("0 100,"+String(ww(c['width']))+",100 100,0");
         }
         //Apply the retrieved css's values.
@@ -175,9 +180,9 @@ class PopupMovable{
         const h = el.clientHeight;
         const w = el.clientWidth;
         //Drawing rectangle with before and after as vertices.
-        const offset = 17;//Size of tip(=leader).
-        const x = Math.round(originalPosition.x - newPosition.x + offset);
-        const y = Math.round(originalPosition.y - (newPosition.y - h/2 - offset));
+        const tip = 17;//Size of tip(=leader).
+        const x = Math.round(originalPosition.x - newPosition.x + tip);
+        const y = Math.round(originalPosition.y - (newPosition.y - h/2 - tip));
         //Leader's CSS of moved Popup.
         const css = this.createPopupCss(x,y,w,h);
         const div = el.children[1];
