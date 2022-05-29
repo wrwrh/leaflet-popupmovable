@@ -38,8 +38,7 @@
 
       //create Popup's for demo.
       const popup = new L.Popup({autoClose:false}).setContent(
-        "It's Movable.<br>" +
-        "This plugin optimized for L.circleMarker");
+        "It's Movable.");
       L.circleMarker([37.75,140.47]).addTo(Lmap).bindPopup(popup).openPopup();
 
       //standalone popup(not bind for any markers.)
@@ -47,13 +46,16 @@
         .setLatLng([35.36, 137.09])
         .setContent('Standalone popup are movable too.')
         .openOn(Lmap);
-      
-      const popup2 = new L.Popup({autoClose:false}).setContent(
-      "Not suitable for L.popup binding L.marker<br>" + 
-      "because This plugin dose not consider Popup's offset");
-      L.marker([26.2,127.68]).addTo(Lmap).bindPopup(popup2).openPopup();
 
-      }
+      const icon = new L.icon({
+        iconUrl:'marker-icon.png',
+        iconSize: [20, 40],
+        iconAnchor: [10, 40],
+        popupAnchor: [0, -20],
+      })
+      const popup2 = new L.Popup({autoClose:false,offset:[0,0]}).setContent("Supported for L.icon's<br>popupAnchor option");
+      L.marker([26.2,127.68],{icon: icon}).addTo(Lmap).bindPopup(popup2).openPopup();
+    }
       
       
 

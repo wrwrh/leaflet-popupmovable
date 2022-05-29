@@ -77,7 +77,7 @@ class PopupMovable{
             'z-index' : -1,//Placement on the back of Popup.
             'position': 'absolute',
             //If you want to emphasize the leader.
-            'filter': 'drop-shadow(0px 0px 5px rgba(0,0,0,20))',
+            'filter': 'drop-shadow(0px 0px 2px gray)',
             //For debbuging.(draw rectangle)
             /*
             'border-width': '2px',
@@ -91,7 +91,7 @@ class PopupMovable{
         const offset = 20;
         const tweakH = 4;
         const tweakW = 3;
-        const iconOffset = 0;
+        
         //Depending on The width of the balloon and distance, change the width of the base of the leader.
         const ww = (width)=>{
             //Usually the bottom width is 20%.
@@ -131,7 +131,7 @@ class PopupMovable{
             }else{
                 //bottom
                 c['height'] = Math.abs(y) + tweakH;
-                c['top'] = h/2 - Math.abs(y)-tweakH; //adding overlapping part.
+                c['top'] = h/2 - Math.abs(y) - tweakH;
                 c['background-image'] = svgicon("0,100 50,0 100,100");
             }
         }else if(x >= 0 && y >= 0){
@@ -175,14 +175,14 @@ class PopupMovable{
     //drawing css as Popup's leader.
     drawCss(el,newPosition){
         //Position of Popup before movging.
-        const originalPosition = this.map.latLngToLayerPoint(el.latlng);
+        const originalPos = this.map.latLngToLayerPoint(el.latlng);
         //Size of Popup.
         const h = el.clientHeight;
         const w = el.clientWidth;
         //Drawing rectangle with before and after as vertices.
         const tip = 17;//Size of tip(=leader).
-        const x = Math.round(originalPosition.x - newPosition.x + tip);
-        const y = Math.round(originalPosition.y - (newPosition.y - h/2 - tip));
+        const x = Math.round(originalPos.x - newPosition.x + tip) + el.popupAnchor[0];
+        const y = Math.round(originalPos.y - (newPosition.y - h/2 - tip)) + el.popupAnchor[1];
         //Leader's CSS of moved Popup.
         const css = this.createPopupCss(x,y,w,h);
         const div = el.children[1];
@@ -209,6 +209,14 @@ class PopupMovable{
         const p = mk.popup;
         //First, Embed the original position in Popup's Object.(to be used later.)
         p._wrapper.parentNode.latlng = p.getLatLng();
+        //Enbed the marker option(popupAnchor) that bindding this popup.
+        try{
+            p._wrapper.parentNode.popupAnchor = p._source.options.icon.options.popupAnchor;
+        }catch{
+            p._wrapper.parentNode.popupAnchor = [0,0];
+        }
+
+            
         //Make Popup elements movable.
         new L.Draggable(p._container,p._wrapper)
             .on('drag',(e)=>{
