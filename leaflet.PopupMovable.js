@@ -1,6 +1,6 @@
 'use strict';
 /*
-* L.PopupMovable
+* Leaflet.PopupMovable
 * Description: A plugin that make L.Popup movable by user dragging and auto draw leadline.
 * Example: new L.map('MapContainer', {popupMovable: true})
 * Author: SUZUKI Yasuhiro
