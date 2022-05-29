@@ -24,21 +24,22 @@
     function init(){
       //initialize L.Map
       const Lmap = new L.map('MapContainer', {
+        popupMovable: true,//set 'true' for enable this plugin.
+        closePopupOnClick: false,//when using the plugin ,this option are recommend 'false'.
         zoomControl: true,
-        closePopupOnClick: false,
         preferCanvas: true,
         fullscreenControl: true,
       }).setView([35.2, 136.9], 5);
+
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(Lmap);
-      //PopupMovable plugin are enabled.
-      new PopupMovable(Lmap);
-
 
       //create Popup's for demo.
-      const popup = new L.Popup({autoClose:false}).setContent(
-        "It's Movable.");
+      const popup = new L.Popup({
+        //recommend set 'false'.
+        autoClose:false
+      }).setContent("It's Movable.");
       L.circleMarker([37.75,140.47]).addTo(Lmap).bindPopup(popup).openPopup();
 
       //standalone popup(not bind for any markers.)
@@ -51,9 +52,12 @@
         iconUrl:'marker-icon.png',
         iconSize: [20, 40],
         iconAnchor: [10, 40],
-        popupAnchor: [0, -20],
+        popupAnchor: [0, -30],
       })
-      const popup2 = new L.Popup({autoClose:false,offset:[0,0]}).setContent("Supported for L.icon's<br>popupAnchor option");
+      const popup2 = new L.Popup({
+        autoClose:false,
+        offset:[0,10]
+      }).setContent("Supported for <br>popupAnchor of L.icon<br>and offset of L.Popup.");
       L.marker([26.2,127.68],{icon: icon}).addTo(Lmap).bindPopup(popup2).openPopup();
     }
       

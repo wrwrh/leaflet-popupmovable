@@ -1,43 +1,20 @@
 'use strict';
 /*
-It makes L.Popup movable.
+* L.PopupMovable
+* Description: A plugin that make L.Popup movable by user dragging and auto draw leadline.
+* Example: new L.map('MapContainer', {popupMovable: true})
+* Author: SUZUKI Yasuhiro
 */
+L.Map.PopupMovable = L.Handler.extend({
+    //translate '-'+lower chara to '-'+uppper chara
+    _camelize(str){
+        return str.replace(/-([a-z])/g, (a,b) => b.toUpperCase());
+    },
+    //This is class name of popup element for judging whether popup moved or not.
+    _MOVED : 'popup-moved',
 
-class PopupMovable{
-    constructor(map){
-        this.map = map;
-        //When Popup open, make it doraggable.
-        map.on('popupopen', (e) => {
-            this.popupMovable(e);
-            this.restorePopup(e);
-        }); 
-
-        //When Popup close, restore Popup's css.
-        map.on('popupclose', (e)=> { 
-            this.restorePopup(e);
-            //Marker, which has not been moved, shall be excluded,
-            L.DomUtil.removeClass(e.popup.getElement(),'popup-moved');
-        });
-
-        //When ZoomLevel changing, First, save the Popup's position before zoomlevel change.
-        map.on('zoomstart', (e)=> {
-            const popupPositions = {};
-            document.querySelectorAll('.leaflet-popup').forEach((p) => {
-                const pos = L.DomUtil.getPosition(p);
-                popupPositions[p._leaflet_id] = pos;
-            });
-            //While ZoomLebel changing, restore Popup's css temporary.
-            this.restorePopup(e);
-            
-            if(Object.keys(popupPositions).length > 0){
-                //After zoom processing, redraw Popup's leader.
-                map.once('zoomend', () => this.zoomCollect(popupPositions));
-            }
-        });
-    }
-    
     //Restore Popup's css(drawing popup's leader).
-    restorePopup(e){
+    _restorePopup(e){
         const div = [],tip = [],css = {};
         //When ZoomLeve change, all Popups's css are restore default css.
         if(e.type === "zoomstart"){
@@ -46,40 +23,37 @@ class PopupMovable{
         }else if(e.type === "popupclose"){
             div.push(e.popup._tipContainer);
             tip.push(e.popup._tipContainer.children[0]);
+            L.DomUtil.removeClass(e.popup.getElement(),this._MOVED);
         }else if(e instanceof L.Popup){
             div.push(e._tipContainer);
             tip.push(e._tipContainer.children[0]);
+            L.DomUtil.removeClass(e.getElement(),this._MOVED);
         }
         const dic = ['z-index','width','height','position','left','top','margin-left','margin-top','margin-bottom','background-image','filter',];
         for(const s of dic)css[s] = '';
-        for(const i of div) for(const name in css) i.style[this.camelize(name)] = css[name];
-        for(const i of tip) i.style.visibility = 'visible';//標準のツールチップを再表示
-    }
-
-    //translate '-'+lower chara to '-'+uppper chara
-    camelize(str){
-        return str.replace(/-([a-z])/g, (a,b) => b.toUpperCase());
-    } 
+        for(const i of div) for(const name in css) i.style[this._camelize(name)] = css[name];
+        //redraw default tooltip
+        for(const i of tip) i.style.visibility = 'visible';
+        //Marker, which has not been moved, shall be excluded,
+        
+    },
 
     //Return css for Popup's leader
-    createPopupCss(x,y,w,h){
+    _createPopupCss(x,y,w,h){
         //Drawing a rectangle using SVG and Triangulate part of it.
         const svgicon = (s)=>{
-            const base = `<?xml version="1.0" encoding="utf-8"?>
-            <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-            <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"  viewBox="0 0 100 100">
-            <polygon points="@@@" stroke-width="0.2" stroke="gray" fill="white" />
-            </svg>`;
-            const uri = encodeURI("data:image/svg+xml," + base.replace('@@@',s));
-            return 'url(' + uri + ')';  
+            const uri = encodeURI(`data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?>
+                <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+                <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"  viewBox="0 0 100 100">
+                <polygon points="${s}" stroke-width="0.2" stroke="gray" fill="white" /></svg>`);
+            return `url(${uri})`;
         }
         const c = {
             'z-index' : -1,//Placement on the back of Popup.
             'position': 'absolute',
             //If you want to emphasize the leader.
             'filter': 'drop-shadow(0px 0px 2px gray)',
-            //For debbuging.(draw rectangle)
-            /*
+            /*For debbuging.(draw rectangle)
             'border-width': '2px',
             'border-color': 'black',
             'border-style': 'solid',
@@ -87,7 +61,7 @@ class PopupMovable{
         };
         //Width when Marker and Popup are parallel.
         const para = 18;
-        //Tweak leadline point(these parameters for L.circleMarker.Not preferred for L.marker).
+        //Tweak leadline point.
         const offset = 20;
         const tweakH = 4;
         const tweakW = 3;
@@ -170,12 +144,12 @@ class PopupMovable{
             }
         });
         return c;
-    }
+    },
 
     //drawing css as Popup's leader.
-    drawCss(el,newPosition){
+    _drawCss(el,newPosition){
         //Position of Popup before movging.
-        const originalPos = this.map.latLngToLayerPoint(el.latlng);
+        const originalPos = this._map.latLngToLayerPoint(el.latlng);
         //Size of Popup.
         const h = el.clientHeight;
         const w = el.clientWidth;
@@ -184,28 +158,28 @@ class PopupMovable{
         const x = Math.round(originalPos.x - newPosition.x + tip) + el.popupAnchor[0];
         const y = Math.round(originalPos.y - (newPosition.y - h/2 - tip)) + el.popupAnchor[1];
         //Leader's CSS of moved Popup.
-        const css = this.createPopupCss(x,y,w,h);
+        const css = this._createPopupCss(x,y,w,h);
         const div = el.children[1];
-        for(const name in css) div.style[this.camelize(name)] = css[name];
+        for(const name in css) div.style[this._camelize(name)] = css[name];
         //Undisplay default tip.
         div.children[0].style.visibility = 'hidden';
-    }
+    },
 
     //When ZoomLevel change, restore Popup's Position and redraw Popup's leader.
-    zoomCollect(previousPosition){
+    _zoomCollect(previousPosition){
         document.querySelectorAll('.leaflet-popup').forEach((popup)=>{
             const position = previousPosition[popup._leaflet_id];
-            if(position !== undefined && L.DomUtil.hasClass(popup,'popup-moved')){
+            if(position !== undefined && L.DomUtil.hasClass(popup,this._MOVED)){
                 L.DomUtil.setPosition(popup,position);
-                this.drawCss(popup,position);
+                this._drawCss(popup,position);
             }
         });
-    }
+    },
 
     /*
     Main Function
     */
-    popupMovable(mk){
+    _popupMovable(mk){
         const p = mk.popup;
         //First, Embed the original position in Popup's Object.(to be used later.)
         p._wrapper.parentNode.latlng = p.getLatLng();
@@ -215,14 +189,52 @@ class PopupMovable{
         }catch{
             p._wrapper.parentNode.popupAnchor = [0,0];
         }
-
             
         //Make Popup elements movable.
         new L.Draggable(p._container,p._wrapper)
             .on('drag',(e)=>{
-                this.drawCss(e.target._element,e.target._newPos);
+                this._drawCss(e.target._element,e.target._newPos);
                 //For ZoomLevel change Event,moved or not, it shall be possible to determine.
-                L.DomUtil.addClass(e.target._element,'popup-moved');
+                L.DomUtil.addClass(e.target._element, this._MOVED);
             }).enable();
-    }
-}
+    },
+
+    _zoomEvent(e){
+        //First, save the Popup's position before zoomlevel change.
+        const popupPositions = {};
+        document.querySelectorAll('.leaflet-popup').forEach((p) => {
+            const pos = L.DomUtil.getPosition(p);
+            popupPositions[p._leaflet_id] = pos;
+        });
+        //While ZoomLebel changing, restore Popup's css temporary.
+        this._restorePopup(e);
+        
+        if(Object.keys(popupPositions).length > 0){
+            //After zoom processing, redraw Popup's leader.
+            this._map.once('zoomend', () => this._zoomCollect(popupPositions));
+        }
+    },
+
+    addHooks: function () {
+        //make it doraggable.
+        this._map.on('popupopen', (e) => this._popupMovable(e),this);
+    
+        //restore Popup's css(tip).
+        this._map.on('popupclose', (e) => this._restorePopup(e),this);
+    
+        //When ZoomLevel changing, save and restore Popup's potision.
+        this._map.on('zoomstart', (e) => this._zoomEvent(e),this);
+    },
+
+    removeHooks: function () {
+        this._map.off('popupopen', (e) => this._popupMovable(e),this);
+        this._map.off('popupclose', (e) => this._restorePopup(e),this);
+        this._map.off('zoomstart', (e) => this._zoomEvent(e),this);
+    },
+});
+
+L.Map.mergeOptions({
+    popupMovable: false,
+});
+
+L.Map.addInitHook('addHandler', 'popupMovable', L.Map.PopupMovable);
