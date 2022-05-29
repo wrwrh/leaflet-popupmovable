@@ -2,7 +2,8 @@
 Make Leaflet's L.Popup movable(draggable) and draw leadline.
 
 [demo](https://wrwrh.github.io/leaflet-popupmovable/Demo/index.html)
-![demo image](./Demo/demo.PNG)
+
+![demo image](./Demo/demo.jpg)
 
 ## Usage
 1. include the plugin file.
@@ -20,7 +21,7 @@ Make Leaflet's L.Popup movable(draggable) and draw leadline.
   });
 </script>
 ```
-3. (Recommended)Disable autoclode option of L.Popup.
+3. (Recommended)Disable autoclose option of L.Popup.
 ```
 var popup = new L.Popup({autoClose:false});
 ```
