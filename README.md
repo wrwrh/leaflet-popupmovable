@@ -16,7 +16,7 @@ Make Leaflet's L.Popup movable(draggable) and draw leadline.
   new PopupMovable(your-L.Map);
 </script>
 ```
-3. (Recommended)Disable autoclode option of L.Popup.
+3. (Recommended)Disable autoclose option of L.Popup.
 ```
 var popup = new L.Popup({autoClose:false});
 ```
