@@ -197,6 +197,12 @@ L.Map.PopupMovable = L.Handler.extend({
                 //For ZoomLevel change Event,moved or not, it shall be possible to determine.
                 L.DomUtil.addClass(e.target._element, this._MOVED);
             }).enable();
+        //When binded Marker clicked, restore leadline.
+        if(p._source !== undefined){
+            L.featureGroup([p._source]).on('click', ()=>{
+                this._restorePopup(p);
+            });
+        }
     },
 
     _zoomEvent(e){
