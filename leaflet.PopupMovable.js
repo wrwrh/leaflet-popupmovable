@@ -125,14 +125,14 @@ L.Map.PopupMovable = L.Handler.extend({
             //right-lower
             c['width'] = Math.abs(x)+offset*2;
             c['left'] = w/2 - Math.abs(x) +tweakW;
-            c['height'] = Math.abs(y);
+            c['height'] = Math.abs(y)+offset;
             c['top'] = h/2 - Math.abs(y) -tweakH;
             c['background-image'] = svgicon("0,0 100,"+ ww(c['height'],true) + " " + ww(c['width'],true) + " 100");
         }else if(x >= 0 && y <= 0){
             //left-lower
             c['width'] = Math.abs(x);
             c['left'] = w/2 + tweakW;
-            c['height'] = Math.abs(y);
+            c['height'] = Math.abs(y)+offset;
             c['top'] = h/2 - Math.abs(y) -tweakH;
             c['background-image'] = svgicon("0," + ww(c['height'],true)+ " " + ww(c['width'])+",100 100,0");
         }
