@@ -49,12 +49,13 @@ L.Map.PopupMovable = L.Handler.extend({
             return `url(${uri})`;
         }
         const c = {
+            //'z-index' : 900,
             'z-index' : -1,//Placement on the back of Popup.
             'position': 'absolute',
             //If you want to emphasize the leader.
             'filter': 'drop-shadow(0px 0px 2px gray)',
             /*For debbuging.(draw rectangle)
-            'border-width': '2px',
+            'border-width': '1px',
             'border-color': 'black',
             'border-style': 'solid',
             */
@@ -67,11 +68,11 @@ L.Map.PopupMovable = L.Handler.extend({
         const tweakW = 3;
         
         //Depending on The width of the balloon and distance, change the width of the base of the leader.
-        const ww = (width)=>{
-            //Usually the bottom width is 20%.
-            if(width * 0.2 < w/2) return 20;
-            //If the width exceeds half of Popup width.
-            else return w/2 * 100/width;
+        const ww = (width,minus=false)=>{
+            const calc = 20 / width * 100
+            //allways return 20px. this size can't over popup harf of width and heigth.
+            if(minus) return String(100 - calc);
+            else  return String(calc);
         }
         //z-index ,When parallel position
         const zin = -1;
@@ -114,28 +115,28 @@ L.Map.PopupMovable = L.Handler.extend({
             c['left'] = w/2 + tweakW;
             c['height'] = Math.abs(y);
             c['top'] = h/2 - tweakH;
-            c['background-image'] = svgicon("0,0 100,100 "+String(ww(c['width']))+",0");
+            c['background-image'] = svgicon(String(ww(c['width'])) + ",0 " + "100,100 " + "0,"+ ww(c['height']));
         }else if(x <= 0 && y >= 0){
             //right-upper
             c['width'] = Math.abs(x)+offset*2;
             c['left'] = w/2 - Math.abs(x) + tweakW;
             c['height'] = Math.abs(y);
             c['top'] = h/2 -tweakH;
-            c['background-image'] = svgicon("0 100,100 0,"+String(100-ww(c['width']))+" 0");
+            c['background-image'] = svgicon("0 100," + ww(c['width'],true) +",0 100," + ww(c['height']));
         }else if(x <= 0 && y <= 0){
             //right-lower
             c['width'] = Math.abs(x)+offset*2;
             c['left'] = w/2 - Math.abs(x) +tweakW;
             c['height'] = Math.abs(y);
             c['top'] = h/2 - Math.abs(y) -tweakH;
-            c['background-image'] = svgicon("0,0 "+String(100-ww(c['width']))+",100 100,100");
+            c['background-image'] = svgicon("0,0 100,"+ ww(c['height'],true) + " " + ww(c['width'],true) + " 100");
         }else if(x >= 0 && y <= 0){
             //left-lower
             c['width'] = Math.abs(x);
             c['left'] = w/2 + tweakW;
             c['height'] = Math.abs(y);
             c['top'] = h/2 - Math.abs(y) -tweakH;
-            c['background-image'] = svgicon("0 100,"+String(ww(c['width']))+",100 100,0");
+            c['background-image'] = svgicon("0," + ww(c['height'],true)+ " " + ww(c['width'])+",100 100,0");
         }
         //Apply the retrieved css's values.
         Object.keys(c).forEach(key => {
