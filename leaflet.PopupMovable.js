@@ -75,11 +75,10 @@ L.Map.PopupMovable = L.Handler.extend({
             else  return String(calc);
         }
         //z-index ,When parallel position
-        const zin = -1;
+        c['z-index'] = -1;
         //Change Processing depending on the position of Marker and Popup.
         if(Math.abs(y)+offset/2 <= h/2){
             //parallel
-            c['z-index'] = zin;
             c['height'] = para;
             c['top'] = h/2 - para/2 + y - tweakH;
             if(x >= 0){
@@ -95,7 +94,6 @@ L.Map.PopupMovable = L.Handler.extend({
             }
         }else if(Math.abs(x-offset)+offset <= w/2){
             //vertical
-            c['z-index'] = zin;
             c['width'] = para;
             c['left'] = w/2 + x - para/2 + tweakW;
             if(y >= 0){
