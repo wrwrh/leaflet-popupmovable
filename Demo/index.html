@@ -39,7 +39,7 @@
       const popup = new L.Popup({
         //recommend set 'false'.
         autoClose:false
-      }).setContent("It's Movable.");
+      }).setContent("It's Movable.\n(Draggable)");
       L.circleMarker([37.75,140.47]).addTo(Lmap).bindPopup(popup).openPopup();
 
       //standalone popup(not bind for any markers.)
