@@ -17,7 +17,12 @@ Make Leaflet's L.Popup movable(draggable) and draw leadline.
     //set 'popupMovable' option true for enable this plugin.
     popupMovable: true,
     //for detect position of popup when zoomlevel changed.
-    popupMovableZoomMode: 'relative',// or 'absolute', default value is 'relative'
+    popupMovableZoomMode: 'relative', // or 'absolute','none', default value is 'relative'.
+    //This option detect method for move popup when zoom changed ,according to
+    //'relative' is Popup and Marker.
+    //'absolute' is on Map position.
+    //'none' is resotre Popup position when zoom chenge.
+
     //(Recommended) this option make set false.
     closePopupOnClick: false,
   });

@@ -25,6 +25,7 @@
       //initialize L.Map
       const Lmap = new L.map('MapContainer', {
         popupMovable: true,//set 'true' for enable this plugin.
+        popupMovableZoomMode: 'relative',
         closePopupOnClick: false,//when using the plugin ,this option are recommend 'false'.
         zoomControl: true,
         preferCanvas: true,

@@ -11,11 +11,12 @@ L.Map.PopupMovable = L.Handler.extend({
         return str.replace(/-([a-z])/g, (a,b) => b.toUpperCase());
     },
     //This is class name of popup element for judging whether popup moved or not.
-    _MOVED : 'popup-moved',
+    _movedLabel : 'popup-moved',
 
     //Restore Popup's css(drawing popup's leader).
     _restorePopup(e){
-        const div = [],tip = [],css = {};
+        const div = [],tip = [],css = {},
+            dic = ['z-index','width','height','position','left','top','margin-left','margin-top','margin-bottom','background-image','filter',];
         //When ZoomLeve change, all Popups's css are restore default css.
         if(e.type === "zoomstart"){
             document.querySelectorAll('.leaflet-popup-tip-container').forEach((c) => div.push(c));
@@ -23,13 +24,13 @@ L.Map.PopupMovable = L.Handler.extend({
         }else if(e.type === "popupclose"){
             div.push(e.popup._tipContainer);
             tip.push(e.popup._tipContainer.children[0]);
-            L.DomUtil.removeClass(e.popup.getElement(),this._MOVED);
+            L.DomUtil.removeClass(e.popup.getElement(),this._movedLabel);
         }else if(e instanceof L.Popup){
             div.push(e._tipContainer);
             tip.push(e._tipContainer.children[0]);
-            L.DomUtil.removeClass(e.getElement(),this._MOVED);
+            L.DomUtil.removeClass(e.getElement(),this._movedLabel);
         }
-        const dic = ['z-index','width','height','position','left','top','margin-left','margin-top','margin-bottom','background-image','filter',];
+        
         for(const s of dic)css[s] = '';
         for(const i of div) for(const name in css) i.style[this._camelize(name)] = css[name];
         //redraw default tooltip
@@ -47,8 +48,8 @@ L.Map.PopupMovable = L.Handler.extend({
                 <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"  viewBox="0 0 100 100">
                 <polygon points="${s}" stroke-width="0.2" stroke="gray" fill="white" /></svg>`);
             return `url(${uri})`;
-        }
-        const c = {
+        },
+            c = {
             //'z-index' : 900,
             'z-index' : -1,//Placement on the back of Popup.
             'position': 'absolute',
@@ -59,20 +60,20 @@ L.Map.PopupMovable = L.Handler.extend({
             'border-color': 'black',
             'border-style': 'solid',
             */
-        };
+        },
         //Width when Marker and Popup are parallel.
-        const para = 18;
+            para = 18,
         //Tweak leadline point.
-        const offset = 20;
-        const tweakH = 4;
-        const tweakW = 3;
+            offset = 20,
+            tweakH = 4,
+            tweakW = 3,
         
         //Depending on The width of the balloon and distance, change the width of the base of the leader.
-        const ww = (width,minus=false)=>{
-            const calc = 20 / width * 100
-            //allways return 20px. this size can't over popup harf of width and heigth.
-            if(minus) return String(100 - calc);
-            else  return String(calc);
+            ww = (width,minus=false)=>{
+                const calc = 20 / width * 100
+                //allways return 20px. this size can't over popup harf of width and heigth.
+                if(minus) return String(100 - calc);
+                else  return String(calc);
         }
         //z-index ,When parallel position
         c['z-index'] = -1;
@@ -148,36 +149,37 @@ L.Map.PopupMovable = L.Handler.extend({
     //drawing css as Popup's leader.
     _drawCss(el,newPosition){
         //Position of Popup before movging.
-        const originalPos = this._map.latLngToLayerPoint(el.latlng);
+        const originalPos = this._map.latLngToLayerPoint(el.latlng),
         //Size of Popup.
-        const h = el.clientHeight;
-        const w = el.clientWidth;
+            h = el.clientHeight,
+            w = el.clientWidth,
         //Drawing rectangle with before and after as vertices.
-        const tip = 17;//Size of tip(=leader).
-        const x = Math.round(originalPos.x - newPosition.x + tip) + el.popupAnchor[0];
-        const y = Math.round(originalPos.y - (newPosition.y - h/2 - tip)) + el.popupAnchor[1];
+            tip = 17,//Size of tip(=leader).
+            x = Math.round(originalPos.x - newPosition.x + tip) + el.popupAnchor[0],
+            y = Math.round(originalPos.y - (newPosition.y - h/2 - tip)) + el.popupAnchor[1],
         //Leader's CSS of moved Popup.
-        const css = this._createPopupCss(x,y,w,h);
-        const div = el.children[1];
+            css = this._createPopupCss(x,y,w,h),
+            div = el.children[1];
         for(const name in css) div.style[this._camelize(name)] = css[name]; 
         //Undisplay default tip.
         div.children[0].style.visibility = 'hidden';
     },
 
     //When ZoomLevel change, restore Popup's Position and redraw Popup's leader.
-    _zoomCollect(previous,marker){
-        document.querySelectorAll('.leaflet-popup').forEach((popup)=>{
-            if(!L.DomUtil.hasClass(popup,this._MOVED)) return;
+    _zoomCollect(popups,previous,marker){
+        popups.forEach((popup)=>{
+            if(!L.DomUtil.hasClass(popup,this._movedLabel)) return;
             const position = (()=>{
                 switch(this._map.options.popupMovableZoomMode){
                     case 'absolute':
-                        return previousPosition[popup._leaflet_id];
+                        return previous[popup._leaflet_id];
                     case 'relative':
                     default:
-                        const x = previous[popup._leaflet_id].x - marker[popup._leaflet_id].x;
-                        const y = previous[popup._leaflet_id].y - marker[popup._leaflet_id].y;
-                        const point = this._map.latLngToLayerPoint(popup.latlng);
-                        return L.point(point.x + x, point.y + y);
+                        const point = this._map.latLngToLayerPoint(popup.latlng),
+                            x = previous[popup._leaflet_id].x - marker[popup._leaflet_id].x,
+                            y = previous[popup._leaflet_id].y - marker[popup._leaflet_id].y;
+                            
+                        return point.add([x,y]);//L.point(point.x + x, point.y + y);
                 }
             });
             L.DomUtil.setPosition(popup,position());
@@ -204,7 +206,7 @@ L.Map.PopupMovable = L.Handler.extend({
             .on('drag',(e)=>{
                 this._drawCss(e.target._element,e.target._newPos);
                 //For ZoomLevel change Event,moved or not, it shall be possible to determine.
-                L.DomUtil.addClass(e.target._element, this._MOVED);
+                L.DomUtil.addClass(e.target._element, this._movedLabel);
             }).enable();
         //When binded Marker clicked, restore leadline.
         if(p._source !== undefined){
@@ -215,19 +217,26 @@ L.Map.PopupMovable = L.Handler.extend({
     },
 
     _zoomEvent(e){
+        if(this._map.options.popupMovableZoomMode === 'none'){
+            this._restorePopup(e);
+            return;    
+        }
         //First, save the Popup's position before zoomlevel change.
-        const popupPositions = {};
-        const popupAnchorPositions = {};
+        const popups = [],
+            popupPositions = {},
+            popupAnchorPositions = {};
+
         document.querySelectorAll('.leaflet-popup').forEach((p) => {
             popupPositions[p._leaflet_id] = L.DomUtil.getPosition(p);
             popupAnchorPositions[p._leaflet_id] = this._map.latLngToLayerPoint(p.latlng);
+            popups.push(p);
         });
         //While ZoomLebel changing, restore Popup's css temporary.
         this._restorePopup(e);
 
         if(Object.keys(popupPositions).length > 0){
             //After zoom processing, redraw Popup's leader.
-            this._map.once('zoomend', () => this._zoomCollect(popupPositions,popupAnchorPositions));
+            this._map.once('zoomend', () => this._zoomCollect(popups,popupPositions,popupAnchorPositions));
         }
     },
 
@@ -240,6 +249,19 @@ L.Map.PopupMovable = L.Handler.extend({
     
         //When ZoomLevel changing, save and restore Popup's potision.
         this._map.on('zoomstart', (e) => this._zoomEvent(e),this);
+
+        //
+        L.Popup = L.Popup.extend({
+            _movedLabelLabel: this._movedLabel,
+            _popupMovableZoomMode: this._map.options.popupMovableZoomMode,
+            _animateZoom: function (e) {
+                if(!L.DomUtil.hasClass(this._container,this._movedLabelLabel) || this._popupMovableZoomMode === 'none'){
+                    const pos = this._map._latLngToNewLayerPoint(this._latlng, e.zoom, e.center),
+                    anchor = this._getAnchor();
+                    L.DomUtil.setPosition(this._container, pos.add(anchor));
+                }
+            },
+        })
     },
 
     removeHooks: function () {
