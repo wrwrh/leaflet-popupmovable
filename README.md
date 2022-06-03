@@ -16,6 +16,8 @@ Make Leaflet's L.Popup movable(draggable) and draw leadline.
   const map = new L.map('MapContainer', {
     //set 'popupMovable' option true for enable this plugin.
     popupMovable: true,
+    //for detect position of popup when zoomlevel changed.
+    popupMovableZoomMode: 'relative',// or 'absolute', default value is 'relative'
     //(Recommended) this option make set false.
     closePopupOnClick: false,
   });
