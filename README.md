@@ -30,7 +30,15 @@ Make Leaflet's L.Popup movable(draggable) and draw leadline.
 ```
 3. (Recommended)Disable autoclose option of L.Popup.
 ```
-var popup = new L.Popup({autoClose:false});
+var popup = L.popup({
+    autoClose:false
+  });
+```
+4. (Optional)Disable this plugin per popup.
+```
+var popup = L.popup({
+    popupmovable:false
+  });
 ```
 
 ## License
