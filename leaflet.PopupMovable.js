@@ -54,12 +54,13 @@ L.Map.PopupMovable = L.Handler.extend({
                 'z-index' : -1,//Placement on the back of Popup.
                 'position': 'absolute',
                 //If you want to emphasize the leader.
-                'filter': 'drop-shadow(0px 0px 2px gray)'
-                /*For debbuging.(draw rectangle)
+                'filter': 'drop-shadow(0px 0px 2px gray)',
+                //For debbuging.(draw rectangle)
+                
                 'border-width': '1px',
                 'border-color': 'black',
                 'border-style': 'solid',
-                */
+                
             },
             //Width when Marker and Popup are parallel.
             para = 18,
@@ -131,7 +132,7 @@ L.Map.PopupMovable = L.Handler.extend({
             c['height'] = offset - y;
             c['top'] = h/2 + y - tweakH;
             const width = ww(c['width'],true), height = ww(c['height'],true);
-            c['background-image'] = svgicon(`0,0 100,${width} ${height} 100`);
+            c['background-image'] = svgicon(`0,0 100,${height},${width} 100`);
         }else if(x >= 0 && y < 0){
             //left-lower
             c['width'] = x;
