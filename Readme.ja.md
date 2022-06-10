@@ -30,8 +30,15 @@ Leafletのポップアップ(L.popup)をドラッグ可能にし、ドラッグ�
 ```
 3. (推奨)L.Popupのautocloseオプションはfalseにすることを推奨します。
 ```
-var popup = new L.Popup({autoClose:false});
+var popup = L.popup({
+    autoClose:false
+  });
 ```
-
+4. (オプション) このプラグインは、ポップアップごとに無効化できます。
+```
+var popup = L.popup({
+    popupmovable:false
+  });
+```
 ## ライセンス
 このコードは、MITライセンスによって提供されています。

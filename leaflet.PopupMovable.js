@@ -266,10 +266,41 @@ L.Map.PopupMovable = L.Handler.extend({
                     L.DomUtil.setPosition(this._container, pos.add(anchor));
                 }
             },
+            //for handle SmoothWheelZoom.js
+            _updatePosition: function () {
+                if (!this._map) { return; }
+                function toPoint(x, y, round) {
+                    if (x instanceof L.Point) return x;
+                    if (Array.isArray(x)) return new L.point(x[0], x[1]);
+                    if (x === undefined || x === null) return x;
+                    if (typeof x === 'object' && 'x' in x && 'y' in x) return new Point(x.x, x.y);
+                    return new Point(x, y, round);
+                }
+                const pos = this._map.latLngToLayerPoint(this._latlng),
+                    offset = toPoint(this.options.offset),
+                    anchor = this._getAnchor();
+      
+                if (this._zoomAnimated) {
+                    if(!L.DomUtil.hasClass(this._container,this._movedLabelLabel) || this._popupMovableZoomMode === 'none'){
+                        L.DomUtil.setPosition(this._container, pos.add(anchor));
+                    }
+                } else {
+                    offset = offset.add(pos).add(anchor);
+                }
+      
+                var bottom = this._containerBottom = -offset.y,
+                    left = this._containerLeft = -Math.round(this._containerWidth / 2) + offset.x;
+      
+                // bottom position the overlay in case the height of the overlay changes (images loading etc)
+                this._container.style.bottom = bottom + 'px';
+                this._container.style.left = left + 'px';
+            },
+
         });
         L.popup = function (options, source) {
             return new L.Popup(options, source);
         };
+        
       
     },
 

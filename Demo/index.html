@@ -8,6 +8,8 @@
   <script src="leaflet-src.js"></script>
   <!--<script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>-->
   <script src="../leaflet.PopupMovable.js"></script>
+  <script src="SmoothWheelZoom.js"></script>
+  
   <style>
 		html, body {
 			height: 100%;
@@ -31,6 +33,9 @@
         zoomControl: true,
         preferCanvas: true,
         fullscreenControl: true,
+        scrollWheelZoom: false, // disable original zoom function
+        smoothWheelZoom: true,  // enable smooth zoom 
+        smoothSensitivity: 1,   // zoom speed. default is 1
       }).setView([35.2, 136.9], 5);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
