@@ -56,11 +56,11 @@ L.Map.PopupMovable = L.Handler.extend({
                 //If you want to emphasize the leader.
                 'filter': 'drop-shadow(0px 0px 2px gray)',
                 //For debbuging.(draw rectangle)
-                
+                /*
                 'border-width': '1px',
                 'border-color': 'black',
                 'border-style': 'solid',
-                
+                */
             },
             //Width when Marker and Popup are parallel.
             para = 18,
