@@ -36,16 +36,15 @@ L.Map.PopupMovable = L.Handler.extend({
         //redraw default tooltip
         for(const t in tip) tip[t].style.visibility = 'visible';
         //Marker, which has not been moved, shall be excluded,
-        
     },
 
     //Return css for Popup's leader
     _createPopupCss(x,y,w,h){
         //Drawing a rectangle using SVG and Triangulate part of it.
-        function svgicon(s){
+        function svgicon(s,width,height){
             const uri = encodeURI(`data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?>
                 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-                <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"  viewBox="0 0 100 100">
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" preserveAspectRatio="none" viewBox="0 0 100 100">
                 <polygon points="${s}" stroke-width="0.2" stroke="gray" fill="white" /></svg>`);
             return `url(${uri})`;
         }
@@ -87,12 +86,12 @@ L.Map.PopupMovable = L.Handler.extend({
                 //left
                 c['width'] = x - w/2 - offset + tweakW; 
                 c['left'] = w + offset;
-                c['background-image'] = svgicon("0,0 100,50 0,100");
+                c['background-image'] = svgicon("0,0 100,50 0,100",c['width'],para);
             }else{
                 //right
                 c['width'] = offset - tweakW - w/2 - x;
                 c['left'] = tweakW + x + w/2;
-                c['background-image'] = svgicon("0,50 100,0 100,100");
+                c['background-image'] = svgicon("0,50 100,0 100,100",c['width'],para);
             }
         }else if(Math.abs(x - offset) + offset <= w/2){
             //vertical
@@ -102,12 +101,12 @@ L.Map.PopupMovable = L.Handler.extend({
                 //top
                 c['height'] = y - h/2;
                 c['top'] = h - tweakH;
-                c['background-image'] = svgicon("0,0 50,100 100,0");
+                c['background-image'] = svgicon("0,0 50,100 100,0",para,c['height']);
             }else{
                 //bottom
                 c['height'] = tweakH - y;
                 c['top'] = h/2 + y - tweakH;
-                c['background-image'] = svgicon("0,100 50,0 100,100");
+                c['background-image'] = svgicon("0,100 50,0 100,100",para,c['height']);
             }
         }else if(x >= 0 && y >= 0){
             //left-upper
@@ -116,7 +115,7 @@ L.Map.PopupMovable = L.Handler.extend({
             c['height'] = y;
             c['top'] = h/2 - tweakH;
             const width = ww(c['width']), height = ww(c['height']);
-            c['background-image'] = svgicon(`${width},0 100,100 0,${height}`);
+            c['background-image'] = svgicon(`${width},0 100,100 0,${height}`,c['width'],c['height']);
         }else if(x < 0 && y >= 0){
             //right-upper
             c['width'] = offset*2 - x;
@@ -124,7 +123,7 @@ L.Map.PopupMovable = L.Handler.extend({
             c['height'] = y;
             c['top'] = h/2 -tweakH;
             const width = ww(c['width'],true), height = ww(c['height']);
-            c['background-image'] = svgicon(`0 100,${width},0 100,${height}`);
+            c['background-image'] = svgicon(`0 100,${width},0 100,${height}`,c['width'],c['height']);
         }else if(x < 0 && y < 0){
             //right-lower
             c['width'] = offset*2 - x;
@@ -132,7 +131,7 @@ L.Map.PopupMovable = L.Handler.extend({
             c['height'] = offset - y;
             c['top'] = h/2 + y - tweakH;
             const width = ww(c['width'],true), height = ww(c['height'],true);
-            c['background-image'] = svgicon(`0,0 100,${height},${width} 100`);
+            c['background-image'] = svgicon(`0,0 100,${height},${width} 100`,c['width'],c['height']);
         }else if(x >= 0 && y < 0){
             //left-lower
             c['width'] = x;
@@ -140,7 +139,7 @@ L.Map.PopupMovable = L.Handler.extend({
             c['height'] = offset - y;
             c['top'] = h/2 + y -tweakH;
             const width = ww(c['width']), height = ww(c['height'],true);
-            c['background-image'] = svgicon(`0,${height} ${width},100 100,0`);
+            c['background-image'] = svgicon(`0,${height} ${width},100 100,0`,c['width'],c['height']);
         }
         //Apply the retrieved css's values.
         Object.keys(c).forEach(function(key){
@@ -296,13 +295,10 @@ L.Map.PopupMovable = L.Handler.extend({
                 this._container.style.bottom = bottom + 'px';
                 this._container.style.left = left + 'px';
             },
-
         });
         L.popup = function (options, source) {
             return new L.Popup(options, source);
         };
-        
-      
     },
 
     removeHooks: function () {
