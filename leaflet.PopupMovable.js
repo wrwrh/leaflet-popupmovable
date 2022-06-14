@@ -38,6 +38,16 @@ L.Map.PopupMovable = L.Handler.extend({
         //Marker, which has not been moved, shall be excluded,
     },
 
+    _hideLeader(e){
+        if(e.type === "zoomstart"){
+            const div = [],css = {},
+                dic = ['z-index','width','height','position','left','top','margin-left','margin-top','margin-bottom','background-image','filter'];
+            document.querySelectorAll('.leaflet-popup-tip-container').forEach(c => div.push(c));
+            for(const s in dic) css[dic[s]] = '';
+            for(const d in div) for(const name in css) div[d].style[this._camelize(name)] = css[name];
+        }
+    },
+
     //Return css for Popup's leader
     _createPopupCss(x,y,w,h){
         //Drawing a rectangle using SVG and Triangulate part of it.
@@ -235,10 +245,10 @@ L.Map.PopupMovable = L.Handler.extend({
             popupAnchorPositions[p._leaflet_id] = this._map.latLngToLayerPoint(p.latlng);
             popups.push(p);
         });
-        //While ZoomLebel changing, restore Popup's css temporary.
-        this._restorePopup(e);
 
         if(Object.keys(popupPositions).length > 0){
+            //While ZoomLebel changing, restore Popup's css temporary.
+            this._hideLeader(e);
             //After zoom processing, redraw Popup's leader.
             this._map.once('zoomend', () => this._zoomCollect(popups,popupPositions,popupAnchorPositions));
         }
