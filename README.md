@@ -46,3 +46,7 @@ var popup = L.popup({
 
 ## License
 This code is provided under the MIT license.
+
+## Appendix
+This code uses "const declaration", "arrow function", "template literals" and "SVG".
+This Plugin dose not work in IE.
