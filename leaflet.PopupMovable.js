@@ -51,11 +51,11 @@ L.Map.PopupMovable = L.Handler.extend({
     //Return css for Popup's leader
     _createPopupCss(x,y,w,h){
         //Drawing a rectangle using SVG and Triangulate part of it.
-        function svgicon(s,width,height){
-            const uri = encodeURI(`data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?>
-                <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" preserveAspectRatio="none" viewBox="0 0 100 100">
-                <polygon points="${s}" stroke-width="0.2" stroke="gray" fill="white" /></svg>`);
+        const svgicon = (s,width,height)=>{
+            const xml = `<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" preserveAspectRatio="none" viewBox="0 0 100 100"><polygon points="${s}" stroke-width="0.2" stroke="gray" fill="white" /></svg>`;
+            //for easyPrint.js, convert svg's xml to base64.
+            const encoded = btoa(xml);
+            const uri = encodeURI(`data:image/svg+xml;charset=utf8;base64,${encoded}`);
             return `url(${uri})`;
         }
         const c = {
@@ -175,7 +175,7 @@ L.Map.PopupMovable = L.Handler.extend({
         //Leader's CSS of moved Popup.
             css = this._createPopupCss(x,y,w,h),
             div = el.children[1];
-        for(const name in css) div.style[this._camelize(name)] = css[name];
+        for(const name in css) div.style[this._camelize(name)] = css[name]; 
         //Undisplay default tip.
         div.children[0].style.visibility = 'hidden';
     },
