@@ -4,24 +4,28 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Demo site for PopupMovable Plug-in</title>
+  <!--<link rel="stylesheet" href="leaflet.css"/>
+  <script src="leaflet-src.js"></script>-->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ==" crossorigin="" />
-  <script src="leaflet-src.js"></script>
-  <!--<script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>-->
+  <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>
   <script src="../leaflet.PopupMovable.js"></script>
   <script src="SmoothWheelZoom.js"></script>
+  <script src="dom-to-image.js"></script>
+  <script src="easyPrint.js"></script>
+  <script src="leaflet-canvas-markers.js"></script>
   
   <style>
-		html, body {
-			height: 100%;
-			margin: 0;
-		}
-		.leaflet-container {
-			height: 400px;
-			width: 600px;
-			max-width: 100%;
-			max-height: 100%;
-		}
-	</style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    .leaflet-container {
+      height: 400px;
+      width: 600px;
+      max-width: 100%;
+      max-height: 100%;
+    }
+  </style>
 
   <script>
     function init(){
@@ -41,13 +45,59 @@
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(Lmap);
-
+      
       //create Popup's for demo.
       const popup = L.popup({
         //recommend set 'false'.
         autoClose:false
       }).setContent("It's Movable.\n(Draggable)");
+
+      const svgicon = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAApCAMAAAD3TXL8AAAABGdBTUEAALGPC/xhBQAAACBjSFJN
+AAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAC/VBMVEVMaXE2gLY3gbc2g7Y9
+hrY3g7Q4g7g5g7c6hbg+h7o5g7g5grg2c5o3grc4g7ZGj8JHkMQ3gbQ1gLQ4gbQ4gbU2frA2gLJH
+kMJJkcM2frA2frA2frE5e7M2fbBEi7xFjL82fbA1e6s5f685f7A1fKwzgLM1eqwzd6o4fa00eKc/
+hrUzd6gzdqcxdKMxdaQxdKMvc6A9grQ8grUwdJ8xb502d6Y1dqYwcJwtbJowcJswb5wvb50+hbwu
+bZgxcqEwcaAvbZgqcZwubZktbZkua5c0d6gua5cubZgoa5Qua5czdaYubJkyaZYvbJcydKYxc6Mu
+bJgtbZgqY5wtbZkubZcubJgtbJYwb58vbZcubJktbJkua5cvbp0tbJkvbpoAAP8tbJkwebYubJct
+bJkub58ubJc4grZQmsxao9VfptdcpNRSnM5WntFUoNNQndJLm9FImdBYoNBSntNImNBHmNBQmMtY
+odVJmdFFl9BYoNRFlc9Elc9Xn9NIl9FClM9Vn9VOlspOm9NBk89IjLw7gLA1e6xHirpUnNBRnNM/
+ks9KmNI7fq2BrMrb5/D6/P3g6/KNtM9MmdI9kc5UndNBhLKgwdf///+0zd8+ga5EjMA8kM5KkcVQ
+irT9/v5ek7lHjsFLlMpDk9A6js5JltJDir2FrcmXudFDh7hAkc85jc2Qtc2gv9RDhbRKl9I3jM1e
+krZunb1CiLxFlNFHldE2i81Mls84eaXB1eLR3+o3d6RLlM00isw3dqKrxde4zt06eKVKlc84i80z
+iMw1ic1FjsYxcZxJgqozcp5Di8M+hbtAkNAxh8wyh8w+jtBHkctAj9BIlNIwhsw2ic47jM9AisM5
+jM4uhctCkdEshMtEktFAiscrgss+iMUpgcorgso8h8Q0h84ogMomf8o6hcIyhc0lfso8i88jfMk3
+gb8xhM4ie8k6is8jfMogesk1gL0vg8wfecg4iM4deMkyfbssgMwbdsgtgcw1hc4ZdMgxe7gqf8wx
+erczg8wwgMgubJcassK+AAAAZnRSTlMAEy5CFSeI5Pb06I8CePn4+YIizNJH+Pr7UfD0G7T4+L5b
+9/ZlCvY89nH2r+fx8MCD+vmATvTzSxj9/Mn+Vfb2UQbv6YX2dPgTjPb0DYL29nnxCe1uamb2YuXi
+W/fd+AHW/krO/kJUicb3AAAAAWJLR0SWkWkrOQAAAAd0SU1FB+YGFAMpOtz+n1cAAAKFSURBVDjL
+Y2CAA0YmZiYWBgzAysaexsHJkcbFzYQizsPLx5+ekZmZmZUtwCfIg5AQEubMycjNyy/Iz8vNKOQU
+YYVJiIqJZxUVl0BBUZaEmCTUZqnSsvIKBCgvS5eWAcvIylVWVYNAVTGUrpRXAEkoKtXU1gFBeX1Z
+TVl9OYhZW6OswsCgqtbQ2AQEjTnNLa0tbe0dYE6DmiqDukZ9JxB0lXb39Pb1T+humAji1muoM2hq
+NU6aNKlp8pSp00Bg+oyiOiC/UUuTQXtm7axZsypmz5kLlpk2bz6IXztTm0FnwcJFixYtXrIUIjFt
+2fIuIH/hAh0G3QUrVq5cuXj5KqjM6jVrgfwVC/QY9GcuXLdu3cKZ66EyGzZuAvP1GQwMN2/ZsmXR
+1m3bwRI7du6aBORvNjJmMDFduxsIFs7cs7dv2tx9+5dsAnHXmpkzWFgeOHjo0KHDm4/sP3rs+J4T
+iw8DeQcPWFkwMFifPHUaCM6cXXzuxLnF58+AOKdsrIHhZmt34cxFMLh0+RKEdeaCvQNQxtHpytVr
+qODqFWdwvLqoXb+BAq7ddHUDx4+F+61Lt5HBpTvuHpBI9XQ9fxcJ3Dvv5QJNBx7u9x88RIDD9719
+YEnE1+/sw0cw8PCsfwA8Vfl4P37yFAYePA70QSS4AP9nT59DwNNndm5IaTTI6cXLVxDw5EVwEHLy
+DbF7/eYtCLx5bR+KkrAdnd+9/wAC7985O6LmhbDwj28/ffr09mN4BFou4Yn8/OXr16/fPkfxoMkw
+RMd8//Tj0/eYaIysxRP789ePX79jMbQA4ynmz9s/cQ6YEgzxCb9fJiYwYANJcX/jkrDKMCSnJGOX
+YEj9l4pDhiEAmQMAIPWOC03GdE0AAAAldEVYdGRhdGU6Y3JlYXRlADIwMjItMDYtMjBUMDM6NDE6
+NTgrMDA6MDDy8gDXAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIyLTA2LTIwVDAzOjQxOjU4KzAwOjAw
+g6+4awAAAABJRU5ErkJggg==`;
+
       L.circleMarker([37.75,140.47]).addTo(Lmap).bindPopup(popup).openPopup();
+      const canvasmarker = L.canvasMarker([38,135],{
+          radius: 10,pointoffset: { x: 0 , y: -30 },
+          img: {
+            url: svgicon,
+            size: [10,20],
+            rotate: 0,
+            offset: {
+              x:5,
+              y:10
+            }
+          }
+        }).addTo(Lmap);
 
       L.popup({
         autoClose:false,
@@ -64,20 +114,24 @@
 
 
       const icon = new L.icon({
-        iconUrl:'marker-icon.png',
+        iconUrl:svgicon,
         iconSize: [20, 40],
         iconAnchor: [10, 40],
         popupAnchor: [0, -30],
       })
+      
       const popup2 = new L.Popup({
         autoClose:false,
         offset:[0,10]
       }).setContent("Supported for <br>popupAnchor of L.icon<br>and offset of L.Popup.");
       L.marker([26.2,127.68],{icon: icon}).addTo(Lmap).bindPopup(popup2).openPopup();
+      
+      L.easyPrint({
+        title: 'print button',
+        position: 'topleft',
+        sizeModes: ['A4Landscape']
+      }).addTo(Lmap);
     }
-      
-      
-
   </script>
 </head>
 <body onload="init()">
