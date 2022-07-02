@@ -31,13 +31,21 @@ https://user-images.githubusercontent.com/94453454/172375328-9da8eea3-a30a-45a2-
   });
 </script>
 ```
-3. (Recommended)Disable autoclose option of L.Popup.
+3. (Required for Printing)
+```
+Add below CSSes for body or etc.
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+
+if not add, leads will draw for square.
+```
+4. (Recommended)Disable autoclose option of L.Popup.
 ```
 var popup = L.popup({
     autoClose:false
   });
 ```
-4. (Optional)Disable this plugin per popup.
+5. (Optional)Disable this plugin per popup.
 ```
 var popup = L.popup({
     popupmovable:false
