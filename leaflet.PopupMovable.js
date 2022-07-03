@@ -6,6 +6,11 @@
 * Author: SUZUKI Yasuhiro
 */
 L.Map.PopupMovable = L.Handler.extend({
+    constructor(map){
+        if(this._map === undefined){
+            this._map = map;
+        }
+    },
     //translate '-'+lower chara to '-'+uppper chara
     _camelize(str){
         return str.replace(/-([a-z])/g, (a,b) => b.toUpperCase());
@@ -38,14 +43,12 @@ L.Map.PopupMovable = L.Handler.extend({
         //Marker, which has not been moved, shall be excluded,
     },
 
-    _hideLeader(e){
-        if(e.type === "zoomstart"){
-            const div = [],css = {},
-                dic = ['z-index','width','height','position','left','top','margin-left','margin-top','margin-bottom','background-image','filter'];
-            document.querySelectorAll('.leaflet-popup-tip-container').forEach(c => div.push(c));
-            for(const s in dic) css[dic[s]] = '';
-            for(const d in div) for(const name in css) div[d].style[this._camelize(name)] = css[name];
-        }
+    _hideLeader(){
+        const div = [],css = {},
+            dic = ['z-index','width','height','position','left','top','margin-left','margin-top','margin-bottom','background-image','filter'];
+        document.querySelectorAll('.leaflet-popup-tip-container').forEach(c => div.push(c));
+        for(const s in dic) css[dic[s]] = '';
+        for(const d in div) for(const name in css) div[d].style[this._camelize(name)] = css[name];
     },
 
     //Return css for Popup's leader
@@ -162,9 +165,9 @@ L.Map.PopupMovable = L.Handler.extend({
     },
 
     //drawing css as Popup's leader.
-    _drawCss(el,newPosition){
+    _drawCss(el,newPosition,map=this._map){
         //Position of Popup before movging.
-        const originalPos = this._map.latLngToLayerPoint(el.latlng),
+        const originalPos = map.latLngToLayerPoint(el.latlng),
         //Size of Popup.
             h = el.clientHeight,
             w = el.clientWidth,
@@ -187,18 +190,18 @@ L.Map.PopupMovable = L.Handler.extend({
             const position = ( () => {
                 switch(this._map.options.popupMovableZoomMode){
                     case 'absolute':
-                        return previous[popup._leaflet_id];
+                        return previous.shift();
                     case 'relative':
                     default:
                         const point = this._map.latLngToLayerPoint(popup.latlng),
-                            x = previous[popup._leaflet_id].x - marker[popup._leaflet_id].x,
-                            y = previous[popup._leaflet_id].y - marker[popup._leaflet_id].y;
-                            
+                            pre = previous.shift(), mk = marker.shift(),
+                            x = pre.x - mk.x, y = pre.y - mk.y;
                         return point.add([x,y]);//L.point(point.x + x, point.y + y);
                 }
             });
-            L.DomUtil.setPosition(popup,position());
-            this._drawCss(popup,position());
+            const pos = position();
+            L.DomUtil.setPosition(popup,pos);
+            this._drawCss(popup,pos);
         });
     },
 
@@ -231,26 +234,131 @@ L.Map.PopupMovable = L.Handler.extend({
     },
 
     _zoomEvent(e){
-        if(this._map.options.popupMovableZoomMode === 'none'){
+        if(e !== undefined && this._map.options.popupMovableZoomMode === 'none'){
             this._restorePopup(e);
             return;    
         }
         //First, save the Popup's position before zoomlevel change.
         const popups = [],
-            popupPositions = {},
-            popupAnchorPositions = {};
+            popupPositions = [],
+            popupAnchorPositions = [];
 
         document.querySelectorAll('.leaflet-popup').forEach(p => {
-            popupPositions[p._leaflet_id] = L.DomUtil.getPosition(p);
-            popupAnchorPositions[p._leaflet_id] = this._map.latLngToLayerPoint(p.latlng);
+            if(!L.DomUtil.hasClass(p,this._movedLabel)) return;
             popups.push(p);
+            popupPositions.push(L.DomUtil.getPosition(p));
+            popupAnchorPositions.push(this._map.latLngToLayerPoint(p.latlng));
         });
 
         if(Object.keys(popupPositions).length > 0){
             //While ZoomLebel changing, restore Popup's css temporary.
-            this._hideLeader(e);
+            if(e !== undefined && e.type === "zoomstart") this._hideLeader(e);
             //After zoom processing, redraw Popup's leader.
             this._map.once('zoomend', () => this._zoomCollect(popups,popupPositions,popupAnchorPositions));
+        }
+    },
+
+    /*
+        Disperse all open Popup.
+        This module is used after modification leaflet-tooltip-layout(https://github.com/ZijingPeng/leaflet-tooltip-layout.git)
+    */
+    popupDispersion: function(){
+        const getPosition = el =>{
+            const translateString = el.style.transform.split('(')[1].split(')')[0].split(',');
+            return L.point(parseInt(translateString[0]), parseInt(translateString[1]));
+        }
+        const computePositionStep = (t,mks)=>{
+            const normalize = a =>{
+                const l = a.distanceTo(L.point(0, 0));
+                if (l === 0) return a;
+                else return L.point(a.x / l, a.y / l);
+            }
+            const k = Math.sqrt((window.innerWidth * window.innerHeight) / 10 / mks.length), 
+                fr = (x,k) => (k * k) / x;
+            for (let i = 0; i < mks.length; i++) {
+                const v = mks[i], 
+                    v_pos = getPosition(v.getPopup()._container);
+                v.disp = L.point(0, 0);
+                for (let j = 0; j < mks.length; j++) {
+                    if (i !== j) {
+                    const dpos = v_pos.subtract(getPosition(mks[j].getPopup()._container));
+                    if (dpos !== 0) v.disp = v.disp.add(normalize(dpos).multiplyBy(fr(dpos.distanceTo(L.point(0, 0)), k)));
+                    }
+                }
+            }
+            
+            const fa = (x,k) => (x * x) / k;
+            for (const v of mks){
+              const v_pos = getPosition(v.getPopup()._container),
+                dpos = v_pos.subtract(this._map.latLngToLayerPoint(v.getLatLng()));
+              v.disp = v.disp.subtract(normalize(dpos).multiplyBy(fa(dpos.distanceTo(L.point(0, 0)), k)));
+            }
+            
+            const scaleTo = (a, b) => L.point(a.x * b.x, a.y * b.y);
+            for (const v of mks) {
+              const disp = v.disp,
+                el = v.getPopup()._container,
+                p = getPosition(el).add(scaleTo(normalize(disp), L.point(Math.min(Math.abs(disp.x), t), Math.min(Math.abs(disp.y), t))));
+              L.DomUtil.setPosition(el, L.point(Math.ceil(p.x), Math.ceil(p.y)));
+            }
+        }
+
+        const mks = [];
+        this._map.eachLayer((e)=>{
+            if((e instanceof L.CircleMarker || e instanceof L.Marker) && e.isPopupOpen()) mks.push(e);
+        });
+
+        for (let i = 0; i < mks.length; i++) {
+            const mk = mks[i],
+                p = this._map.latLngToLayerPoint(mk.getLatLng()),
+                angle = ((2 * Math.PI) / 6) * i,
+                dest = L.point(Math.ceil(p.x + 200 * Math.sin(angle)), Math.ceil(p.y + 200 * Math.cos(angle))),
+                popup = mk.getPopup();
+            L.DomUtil.setPosition(popup._container, dest);
+        }
+        const start = Math.ceil(window.innerWidth / 10),
+            times = 30;
+        for (let i = 0; i < times; i += 1) computePositionStep(start * (1 - i / (times - 1)), mks);
+        for (const v of  mks) {
+            const el = v.getPopup()._container,
+                pos = getPosition(el),
+                p = L.point(Math.ceil(pos.x - el.offsetWidth / 2), Math.ceil(pos.y - el.offsetHeight / 2));
+            L.DomUtil.setPosition(el, p);
+        }
+        const bounds = this._map.getBounds(),
+            NW = this._map.latLngToLayerPoint(bounds.getNorthWest()),
+            SE = this._map.latLngToLayerPoint(bounds.getSouthEast());
+        for (const v of mks) {
+            const el = v.getPopup()._container,
+                p = getPosition(el),
+                m = this._map.latLngToLayerPoint(v.getLatLng()),
+                w = el.offsetWidth,
+                h = el.offsetHeight;
+            let isEdge = false;
+            if (m.x > NW.x && p.x < NW.x) {
+                p.x = NW.x;
+                isEdge = true;
+            } else if (m.x < SE.x && p.x > SE.x - w) {
+                p.x = SE.x - w;
+                isEdge = true;
+            }
+            if (m.y > NW.y && p.y < NW.y) {
+                p.y = NW.y;
+                isEdge = true;
+            } else if (m.y < SE.y && p.y > SE.y - h) {
+                p.y = SE.y - h;
+                isEdge = true;
+            }
+            if (!isEdge) {
+                if (m.x < NW.x && p.x > NW.x - w) p.x = NW.x - w;
+                else if (m.x > SE.x && p.x < SE.x) p.x = SE.x;
+                if (m.y < NW.y && p.y > NW.y - h) p.y = NW.y - h;
+                else if (m.y > SE.y && p.y < SE.y) p.y = SE.y;
+            }
+            L.DomUtil.setPosition(el, p);
+            L.DomUtil.addClass(el,this._movedLabel);
+            el.latlng = v.getLatLng();
+            this._drawCss(el,p);
         }
     },
 
@@ -267,10 +375,9 @@ L.Map.PopupMovable = L.Handler.extend({
         //when zoomlevelChange, don't restore popup position.(only popup that binded marker)
         L.Popup = L.Popup.extend({
             popupmovable: true,
-            _movedLabelLabel: this._movedLabel,
             _popupMovableZoomMode: this._map.options.popupMovableZoomMode,
             _animateZoom: function (e) {
-                if(!L.DomUtil.hasClass(this._container,this._movedLabelLabel) || this._popupMovableZoomMode === 'none'){
+                if(!L.DomUtil.hasClass(this._container,this._movedLabel) || this._popupMovableZoomMode === 'none'){
                     const pos = this._map._latLngToNewLayerPoint(this._latlng, e.zoom, e.center),
                     anchor = this._getAnchor();
                     L.DomUtil.setPosition(this._container, pos.add(anchor));
@@ -291,7 +398,7 @@ L.Map.PopupMovable = L.Handler.extend({
                     anchor = this._getAnchor();
       
                 if (this._zoomAnimated) {
-                    if(!L.DomUtil.hasClass(this._container,this._movedLabelLabel) || this._popupMovableZoomMode === 'none'){
+                    if(!L.DomUtil.hasClass(this._container,this._movedLabel) || this._popupMovableZoomMode === 'none'){
                         L.DomUtil.setPosition(this._container, pos.add(anchor));
                     }
                 } else {

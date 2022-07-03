@@ -51,6 +51,12 @@ var popup = L.popup({
     popupmovable:false
   });
 ```
+6. Method
+Disperses popups that are being displayed(only Marker binded Popup).
+```
+const pm = new L.Map.PopupMovable(Lmap);
+pm.popupDispersion();
+```
 
 ## License
 This code is provided under the MIT license.

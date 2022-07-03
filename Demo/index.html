@@ -10,6 +10,7 @@
   <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>
   <script src="../leaflet.PopupMovable.js"></script>
   <script src="SmoothWheelZoom.js"></script>
+  <script src="PopupLayout.js"></script>
   
   <style>
     html, body {
@@ -32,6 +33,7 @@
       const Lmap = new L.map('MapContainer', {
         popupMovable: true,//set 'true' for enable this plugin.
         popupMovableZoomMode: 'relative',
+        //popupMovableZoomMode: 'absolute',
         closePopupOnClick: false,//when using the plugin ,this option are recommend 'false'.
         zoomControl: true,
         preferCanvas: true,
@@ -119,7 +121,9 @@ g6+4awAAAABJRU5ErkJggg==`;
         offset:[0,10]
       }).setContent("Supported for <br>popupAnchor of L.icon<br>and offset of L.Popup.");
       L.marker([26.2,127.68],{icon: icon}).addTo(Lmap).bindPopup(popup2).openPopup();
-      
+      // Disperses popups that are being displayed(only Marker binded Popup).
+      const pm = new L.Map.PopupMovable(Lmap);
+      pm.popupDispersion();
     }
   </script>
 </head>

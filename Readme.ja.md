@@ -47,5 +47,11 @@ var popup = L.popup({
     popupmovable:false
   });
 ```
+6. メソッド　表示中のポップアップを分散させます。（マーカーにバインドされたポップアップのみ）.
+```
+const pm = new L.Map.PopupMovable(Lmap);
+pm.popupDispersion();
+```
+
 ## ライセンス
 このコードは、MITライセンスによって提供されています。
