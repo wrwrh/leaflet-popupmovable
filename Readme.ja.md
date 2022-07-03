@@ -28,13 +28,20 @@ Leafletのポップアップ(L.popup)をドラッグ可能にし、ドラッグ�
   });
 </script>
 ```
-3. (推奨)L.Popupのautocloseオプションはfalseにすることを推奨します。
+3. (印刷時は必須)
+```
+BODY要素等に以下のCSSを加えてください。
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+加えない場合、移動後の引出線が四角く描画されます。
+```
+4. (推奨)L.Popupのautocloseオプションはfalseにすることを推奨します。
 ```
 var popup = L.popup({
     autoClose:false
   });
 ```
-4. (オプション) このプラグインは、ポップアップごとに無効化できます。
+5. (オプション) このプラグインは、ポップアップごとに無効化できます。
 ```
 var popup = L.popup({
     popupmovable:false
