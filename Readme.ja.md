@@ -16,13 +16,6 @@ Leafletのポップアップ(L.popup)をドラッグ可能にし、ドラッグ�
   var map = new L.map('MapContainer', {
     //このプラグインを有効にするため、trueをセットします。
     popupMovable: true,
-    //ズーム時のポップアップの位置を算出する方法を指定します。
-    popupMovableZoomMode: 'relative', // デフォルト値は'relative'です。
-    //このオプションには以下の値を指定できます。
-    //'relative' マーカーとポップアップの位置関係を保持します。
-    //'absolute' マップ上におけるポップアップの座標を保持します。
-    //'none' ズーム時にポップアップの位置をデフォルトに戻します、
-
     //(推奨) プラグイン使用時、このオプションはfalseにすることを推奨します。
     closePopupOnClick: false,
   });
